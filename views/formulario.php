@@ -250,7 +250,7 @@
         return;
       }
 
-      const decisionTexto = decisionModal.id.includes('-si') ? 'Sí' : 'No';
+      const decisionTexto = decisionModal.id.includes('-si') ? 'Si' : 'No';
       const decisionClase = decisionModal.id.includes('-si') ? 'text-success' : 'text-danger';
 
       // 3. Mostrar alerta de confirmación
@@ -281,6 +281,8 @@
 
           // Sincronizar la decisión final con el radio button del formulario
           const finalDecisionId = `decision-${currentParticipantId}-${decisionTexto.toLowerCase()}`;
+          console.log(finalDecisionId);
+
           document.getElementById(finalDecisionId).checked = true;
 
           Swal.fire(
