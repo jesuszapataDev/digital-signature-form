@@ -25,6 +25,8 @@ if (isset($uri_parts[0]) && $uri_parts[0] == 'api') {
     // Incluir los controladores
     require_once __DIR__ . '/api/controladores/UsuarioControlador.php';
     require_once __DIR__ . '/api/controladores/FirmaControlador.php';
+    require_once __DIR__ . '/api/controladores/PdfControlador.php';
+
 
     // Preparar el enrutamiento de la API
     array_shift($uri_parts); // Quita "api" de la ruta
@@ -57,6 +59,12 @@ if (isset($uri_parts[0]) && $uri_parts[0] == 'api') {
         responder($resultado);
     }
     break;
+        case 'generar-pdf':
+            if ($metodo == 'GET' && $id) { // Esperamos una URL como /api.php/generar-pdf/1
+                $controller = new PdfController();
+                $controller->generarPdfAcuerdo($id); // Llama al método y termina la ejecución
+            }
+            break;
         default:
             responder(['error' => 'Recurso de API no encontrado', 'status' => 404]);
             break;
