@@ -24,6 +24,7 @@ if (isset($uri_parts[0]) && $uri_parts[0] == 'api') {
 
     // Incluir los controladores
     require_once __DIR__ . '/api/controladores/UsuarioControlador.php';
+    require_once __DIR__ . '/api/controladores/FirmaControlador.php';
 
     // Preparar el enrutamiento de la API
     array_shift($uri_parts); // Quita "api" de la ruta
@@ -49,6 +50,13 @@ if (isset($uri_parts[0]) && $uri_parts[0] == 'api') {
                 responder($resultado);
             }
             break;
+        case 'firmas':
+    if ($metodo === 'POST') {
+        $controller = new FirmaControlador();
+        $resultado = $controller->guardarDesdeAPI($datos_body);
+        responder($resultado);
+    }
+    break;
         default:
             responder(['error' => 'Recurso de API no encontrado', 'status' => 404]);
             break;

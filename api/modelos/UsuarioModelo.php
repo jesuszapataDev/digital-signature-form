@@ -1,6 +1,6 @@
 <?php
 // api/models/UsuarioModelo.php
-require_once 'baseDatos.php';
+require_once __DIR__ . '/../configuraciones/baseDatos.php"';
 
 class UsuarioModelo extends Database
 {

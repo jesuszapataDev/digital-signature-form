@@ -147,14 +147,31 @@
       </div>
     </div>
   </div>
-
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
   <script src="../assets/libs/bootstrap/js/bootstrap.bundle.min.js"></script>
   <script src="../assets/js/signature-pad.js"></script>
 
   <script src="../assets/js/vendor.min.js"></script>
   <script src="../assets/libs/sweetalert2/sweetalert2.min.js"></script>
   <script src="../assets/js/app.min.js"></script>
+<script>
+  
+(function() {
+  function generateUUID() {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+      var r = Math.random() * 16 | 0,
+          v = c == 'x' ? r : (r & 0x3 | 0x8);
+      return v.toString(16);
+    });
+  }
 
+  if (!document.cookie.includes('device_id=')) {
+    const id = generateUUID();
+    document.cookie = "device_id=" + id + "; path=/; max-age=" + (60*60*24*365*2);
+  }
+})();
+
+</script>
   <script>
     const participantes = [
       "José Reyes Pérez Muñoz", "Patricia Pérez Muñoz", "Silvia Pérez Muñoz", "José Abel Pérez Muñoz",
@@ -227,72 +244,107 @@
       signaturePad.clear();
     }
 
-    function guardarFirma() {
-      const decisionModal = document.querySelector('input[name="decision-modal"]:checked');
+ function guardarFirma() {
+  const decisionModal = $('input[name="decision-modal"]:checked');
 
-      // 1. Validar que se haya seleccionado una opción
-      if (!decisionModal) {
-        Swal.fire({
-          icon: 'error',
-          title: 'Opción no seleccionada',
-          text: 'Debes seleccionar "Sí" o "No" antes de guardar.'
-        });
-        return;
+  if (decisionModal.length === 0) {
+    Swal.fire({
+      icon: 'error',
+      title: 'Opción no seleccionada',
+      text: 'Debes seleccionar "Sí" o "No" antes de guardar.'
+    });
+    return;
+  }
+
+  if (signaturePad.isEmpty()) {
+    Swal.fire({
+      icon: 'error',
+      title: 'Firma vacía',
+      text: 'Por favor, proporciona tu firma en el recuadro.'
+    });
+    return;
+  }
+
+  const decisionTexto = decisionModal.attr('id').includes('-si') ? 'sí' : 'no';
+  const decisionClase = decisionModal.attr('id').includes('-si') ? 'text-success' : 'text-danger';
+
+  Swal.fire({
+    title: '¿Confirmar y Guardar?',
+    html: `Has seleccionado: <strong class="${decisionClase}">${decisionTexto.toUpperCase()}</strong>.<br><br>Esta acción es final y <strong>no se podrá modificar</strong>.`,
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#0d6efd',
+    cancelButtonColor: '#6c757d',
+    confirmButtonText: 'Sí, guardar',
+    cancelButtonText: 'Cancelar'
+  }).then(result => {
+    if (result.isConfirmed) {
+      const firmaBase64 = signaturePad.toDataURL('image/png');
+
+      const acuerdoId = 1; // Estático por ahora, puedes hacerlo dinámico
+      const participanteId = currentParticipantId;
+
+      const payload = {
+        acuerdo_id: acuerdoId,
+        participante_id: participanteId,
+        decision: decisionTexto,
+        firma_base64: firmaBase64
+      };
+
+      console.log('📤 Enviando datos de firma:', payload);
+
+const formData = new FormData();
+formData.append('accion', 'guardar_firma');
+formData.append('acuerdo_id', acuerdoId);
+formData.append('participante_id', participanteId);
+formData.append('decision', decisionTexto);
+formData.append('firma_base64', firmaBase64);
+
+$.ajax({
+  url: '../api/ajax/firma.ajax.php',
+  method: 'POST',
+  data: formData,
+  processData: false,
+  contentType: false,
+  dataType: 'json',
+  success: function (data) {
+    console.log('✅ Respuesta del servidor:', data);
+
+    if (data.mensaje) {
+      const modal = bootstrap.Modal.getInstance(document.getElementById('signatureModal'));
+      modal.hide();
+
+      const row = document.getElementById(`participante-${participanteId}`);
+      if (row) {
+        row.classList.add('firmado');
+        const link = row.querySelector('.signature-link');
+        if (link) link.innerHTML = '<i class="fas fa-check"></i> Firmado';
       }
 
-      // 2. Validar que la firma no esté vacía
-      if (signaturePad.isEmpty()) {
-        Swal.fire({
-          icon: 'error',
-          title: 'Firma vacía',
-          text: 'Por favor, proporciona tu firma en el recuadro.'
-        });
-        return;
-      }
+      const finalDecisionId = `decision-${participanteId}-${decisionTexto.toLowerCase()}`;
+      const radio = document.getElementById(finalDecisionId);
+      if (radio) radio.checked = true;
 
-      const decisionTexto = decisionModal.id.includes('-si') ? 'Si' : 'No';
-      const decisionClase = decisionModal.id.includes('-si') ? 'text-success' : 'text-danger';
-
-      // 3. Mostrar alerta de confirmación
-      Swal.fire({
-        title: '¿Confirmar y Guardar?',
-        html: `Has seleccionado: <strong class="${decisionClase}">${decisionTexto}</strong>.<br><br>Esta acción es final y <strong>no se podrá modificar</strong>.`,
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#0d6efd',
-        cancelButtonColor: '#6c757d',
-        confirmButtonText: 'Sí, guardar',
-        cancelButtonText: 'Cancelar'
-      }).then((result) => {
-        if (result.isConfirmed) {
-          // --- Lógica de guardado real iría aquí ---
-          console.log(`Guardando para ID: ${currentParticipantId}`);
-          console.log(`Decisión final: ${decisionTexto}`);
-          const firmaBase64 = signaturePad.toDataURL('image/png');
-          // fetch('/api/firma', { method: 'POST', body: ... })
-
-          // Actualizar la UI
-          const modal = bootstrap.Modal.getInstance(document.getElementById('signatureModal'));
-          modal.hide();
-
-          const row = document.getElementById(`participante-${currentParticipantId}`);
-          row.classList.add('firmado');
-          row.querySelector('.signature-link').innerHTML = '<i class="fas fa-check"></i> Firmado';
-
-          // Sincronizar la decisión final con el radio button del formulario
-          const finalDecisionId = `decision-${currentParticipantId}-${decisionTexto.toLowerCase()}`;
-          console.log(finalDecisionId);
-
-          document.getElementById(finalDecisionId).checked = true;
-
-          Swal.fire(
-            '¡Guardado!',
-            'Tu firma ha sido registrada correctamente.',
-            'success'
-          );
-        }
-      });
+      Swal.fire('¡Firmado!', data.mensaje, 'success');
+    } else if (data.error) {
+      Swal.fire('Error', data.error, 'error');
+    } else {
+      Swal.fire('Error', 'Respuesta inesperada del servidor.', 'error');
     }
+  },
+  error: function (xhr, status, error) {
+    console.error('❌ Error AJAX:', {
+      status,
+      error,
+      response: xhr.responseText
+    });
+    Swal.fire('Error', 'No se pudo conectar con el servidor. Intenta más tarde.', 'error');
+  }
+});
+
+    }
+  });
+}
 
     // Añade esta función a tu bloque <script> en formulario.html
 
