@@ -65,7 +65,7 @@
             }
 
             // 3. Rediriges al usuario al formulario, pasando el ID en la URL.
-            window.location.href = `formulario.php?participante=${participanteId}`;
+            window.location.href = `views/formulario?participante=${participanteId}`;
         }
     </script>
 </body>
