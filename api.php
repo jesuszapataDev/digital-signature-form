@@ -24,6 +24,7 @@ if (isset($uri_parts[0]) && $uri_parts[0] == 'api') {
 
     // Incluir los controladores
     require_once __DIR__ . '/api/controladores/UsuarioControlador.php';
+    require_once __DIR__ . '/api/controladores/PdfControlador.php';
 
     // Preparar el enrutamiento de la API
     array_shift($uri_parts); // Quita "api" de la ruta
@@ -47,6 +48,12 @@ if (isset($uri_parts[0]) && $uri_parts[0] == 'api') {
                 $controller = new UsuarioControlador();
                 $resultado = $controller->crearUsuario($datos_body, $admin_id_logueado);
                 responder($resultado);
+            }
+            break;
+        case 'generar-pdf':
+            if ($metodo == 'GET' && $id) { // Esperamos una URL como /api.php/generar-pdf/1
+                $controller = new PdfController();
+                $controller->generarPdfAcuerdo($id); // Llama al método y termina la ejecución
             }
             break;
         default:
