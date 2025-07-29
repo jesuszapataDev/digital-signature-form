@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Acuerdo de Rifa - Firma Digital</title>
+
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+    />
+
+    <style>
+      body {
+        background-color: #f8f9fa;
+      }
+      .header-actions {
+        background-color: #fff;
+        padding: 1rem;
+        border-radius: 0.5rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+      .participant-row {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 1rem;
+        padding: 1rem;
+      }
+      .participant-row .name {
+        flex-grow: 1;
+        font-weight: 500;
+      }
+      .signature-link {
+        font-weight: bold;
+        color: #0d6efd;
+        cursor: pointer;
+        text-decoration: underline;
+      }
+      /* Estilo para la fila cuando ya está firmada */
+      .participant-row.firmado {
+        background-color: #e9ecef;
+        opacity: 0.7;
+      }
+      .participant-row.firmado .btn-group,
+      .participant-row.firmado .signature-link {
+        pointer-events: none; /* Bloquea interacciones */
+      }
+      #signature-pad {
+        border: 1px dashed #6c757d;
+        border-radius: 0.25rem;
+        cursor: crosshair;
+      }
+      .modal-header {
+        background-color: #0d6efd;
+        color: white;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container my-4">
+      <div class="header-actions d-flex justify-content-end gap-2">
+        <button class="btn btn-success" onclick="compartirEnlace()">
+          <i class="fas fa-share-alt"></i> Compartir
+        </button>
+        <button class="btn btn-danger" onclick="descargarPDF()">
+          <i class="fas fa-file-pdf"></i> Descargar PDF
+        </button>
+      </div>
+
+      <div class="text-center mb-4">
+        <h1 class="h3">Acuerdo Legal - Distribución de Herencia por Rifa</h1>
+        <p class="lead">
+          Por favor, marque su decisión y firme para registrar su conformidad.
+        </p>
+      </div>
+
+      <div class="list-group">
+        <div class="list-group-item participant-row" id="participante-1">
+          <div class="name">1. José Reyes Pérez Muñoz</div>
+          <div class="btn-group" role="group">
+            <input
+              type="radio"
+              class="btn-check"
+              name="decision-1"
+              id="decision-1-si"
+              autocomplete="off"
+            />
+            <label class="btn btn-outline-primary" for="decision-1-si"
+              >Sí</label
+            >
+
+            <input
+              type="radio"
+              class="btn-check"
+              name="decision-1"
+              id="decision-1-no"
+              autocomplete="off"
+            />
+            <label class="btn btn-outline-secondary" for="decision-1-no"
+              >No</label
+            >
+          </div>
+          <div
+            class="signature-link"
+            data-bs-toggle="modal"
+            data-bs-target="#signatureModal"
+            onclick="prepararFirma(1, 'José Reyes Pérez Muñoz')"
+          >
+            <i class="fas fa-pencil-alt"></i> Firma aquí
+          </div>
+        </div>
+
+        <div class="list-group-item participant-row" id="participante-2">
+          <div class="name">2. Patricia Pérez Muñoz</div>
+          <div class="btn-group" role="group">
+            <input
+              type="radio"
+              class="btn-check"
+              name="decision-2"
+              id="decision-2-si"
+              autocomplete="off"
+            />
+            <label class="btn btn-outline-primary" for="decision-2-si"
+              >Sí</label
+            >
+            <input
+              type="radio"
+              class="btn-check"
+              name="decision-2"
+              id="decision-2-no"
+              autocomplete="off"
+            />
+            <label class="btn btn-outline-secondary" for="decision-2-no"
+              >No</label
+            >
+          </div>
+          <div
+            class="signature-link"
+            data-bs-toggle="modal"
+            data-bs-target="#signatureModal"
+            onclick="prepararFirma(2, 'Patricia Pérez Muñoz')"
+          >
+            <i class="fas fa-pencil-alt"></i> Firma aquí
+          </div>
+        </div>
+
+        <div
+          class="list-group-item participant-row firmado"
+          id="participante-3"
+        >
+          <div class="name">3. Silvia Pérez Muñoz</div>
+          <div class="btn-group" role="group">
+            <input
+              type="radio"
+              class="btn-check"
+              name="decision-3"
+              id="decision-3-si"
+              checked
+              disabled
+            />
+            <label class="btn btn-outline-primary" for="decision-3-si"
+              >Sí</label
+            >
+            <input
+              type="radio"
+              class="btn-check"
+              name="decision-3"
+              id="decision-3-no"
+              disabled
+            />
+            <label class="btn btn-outline-secondary" for="decision-3-no"
+              >No</label
+            >
+          </div>
+          <div class="signature-link"><i class="fas fa-check"></i> Firmado</div>
+        </div>
+
+        <div class="list-group-item participant-row" id="participante-4">
+          <div class="name">4. José Abel Pérez Muñoz</div>
+          <div class="btn-group" role="group">
+            <input
+              type="radio"
+              class="btn-check"
+              name="decision-4"
+              id="decision-4-si"
+              autocomplete="off"
+            />
+            <label class="btn btn-outline-primary" for="decision-4-si"
+              >Sí</label
+            >
+            <input
+              type="radio"
+              class="btn-check"
+              name="decision-4"
+              id="decision-4-no"
+              autocomplete="off"
+            />
+            <label class="btn btn-outline-secondary" for="decision-4-no"
+              >No</label
+            >
+          </div>
+          <div
+            class="signature-link"
+            data-bs-toggle="modal"
+            data-bs-target="#signatureModal"
+            onclick="prepararFirma(4, 'José Abel Pérez Muñoz')"
+          >
+            <i class="fas fa-pencil-alt"></i> Firma aquí
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div
+      class="modal fade"
+      id="signatureModal"
+      tabindex="-1"
+      aria-labelledby="signatureModalLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="signatureModalLabel">Realizar Firma</h5>
+            <button
+              type="button"
+              class="btn-close btn-close-white"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <p>Firmando como: <strong id="modalParticipantName"></strong></p>
+            <p class="text-muted small">
+              Por favor, firme con su dedo en el siguiente recuadro.
+            </p>
+            <canvas id="signature-pad" width="460" height="200"></canvas>
+            <input type="hidden" id="modalParticipantId" value="" />
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              onclick="limpiarFirma()"
+            >
+              Limpiar
+            </button>
+            <button
+              type="button"
+              class="btn btn-primary"
+              onclick="guardarFirma()"
+            >
+              Guardar Firma
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
+
+    <script>
+      // Lógica de JavaScript para inicializar y controlar la firma
+      const canvas = document.getElementById('signature-pad')
+      const signaturePad = new SignaturePad(canvas, {
+        backgroundColor: 'rgb(255, 255, 255)',
+      })
+
+      function prepararFirma(id, nombre) {
+        // Carga los datos del participante en el modal
+        document.getElementById('modalParticipantId').value = id
+        document.getElementById('modalParticipantName').textContent = nombre
+        // Limpia el canvas anterior
+        signaturePad.clear()
+      }
+
+      function limpiarFirma() {
+        signaturePad.clear()
+      }
+
+      function guardarFirma() {
+        // Aquí iría la lógica para enviar los datos al backend
+        const id = document.getElementById('modalParticipantId').value
+        if (signaturePad.isEmpty()) {
+          alert('Por favor, provea una firma.')
+          return
+        }
+
+        // 1. Obtener decisión (Sí/No)
+        const decision = document.querySelector(
+          `input[name="decision-${id}"]:checked`
+        )
+        if (!decision) {
+          alert("Por favor, seleccione 'Sí' o 'No' antes de firmar.")
+          return
+        }
+
+        // 2. Obtener firma en base64
+        const firmaBase64 = signaturePad.toDataURL('image/png')
+
+        // 3. Obtener geolocalización (se debe pedir permiso al usuario)
+        // navigator.geolocation.getCurrentPosition(...)
+
+        console.log(`Guardando para ID: ${id}`)
+        console.log(`Decisión: ${decision.id}`)
+        console.log('Firma (Base64):', firmaBase64.substring(0, 40) + '...')
+
+        // Simular cierre de modal y bloqueo de fila
+        const modalElement = document.getElementById('signatureModal')
+        const modal = bootstrap.Modal.getInstance(modalElement)
+        modal.hide()
+
+        document.getElementById(`participante-${id}`).classList.add('firmado')
+        document.querySelector(
+          `#participante-${id} .signature-link`
+        ).innerHTML = '<i class="fas fa-check"></i> Firmado'
+      }
+
+      // Funciones placeholder para los botones superiores
+      function compartirEnlace() {
+        alert('Función de compartir activada.')
+        // Aquí iría la lógica de Web Share API
+      }
+
+      function descargarPDF() {
+        alert('Función de descarga de PDF activada.')
+        // Aquí iría la petición fetch para obtener el blob del PDF
+      }
+    </script>
+  </body>
+</html>
