@@ -6,8 +6,22 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Acuerdo de Rifa - Firma Digital</title>
 
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <link rel="shortcut icon" href="../assets/images/favicon.ico">
+
+  <script src="../assets/js/head.js"></script>
+
+  <!-- Bootstrap css -->
+  <link href="../assets/css/bootstrap.min.css" rel="stylesheet" type="text/css" id="app-style">
+
+  <!-- App css -->
+  <link href="../assets/css/app.min.css" rel="stylesheet" type="text/css">
+
+  <!-- Icons css -->
+  <link href="../assets/css/icons.min.css" rel="stylesheet" type="text/css">
+
+  <!-- sweetalertw -->
+  <link rel="stylesheet" href="../assets/libs/sweetalert2/sweetalert2.min.css">
+
 
   <style>
     body {
@@ -65,10 +79,7 @@
       cursor: crosshair;
     }
 
-    .modal-header {
-      background-color: #0d6efd;
-      color: white;
-    }
+    .modal-header {}
 
     .decision-modal-container {
       border-top: 1px solid #eee;
@@ -81,15 +92,29 @@
 <body>
   <div class="container my-4">
     <div class="header-actions d-flex justify-content-end gap-2">
-      <button class="btn btn-success"><i class="fas fa-share-alt"></i> Compartir</button>
+      <button class="btn btn-success" onclick="compartirFormulario()">
+        <i class="fas fa-share-alt"></i> Compartir
+      </button>
+      <button type="button" class="btn btn-secondary" onclick="copiarEnlaceAlPortapapeles('URL_PARA_COPIAR')">
+        <i class="fas fa-copy"></i> Copiar Enlace
+      </button>
+
       <button class="btn btn-danger"><i class="fas fa-file-pdf"></i> Descargar PDF</button>
     </div>
-    <div class="text-center mb-4">
-      <h1 class="h3">Acuerdo Legal - Distribución de Herencia por Rifa</h1>
-      <p class="lead">Bienvenido. Por favor, marque su decisión y firme para registrar su conformidad.</p>
-    </div>
 
-    <div class="list-group" id="lista-participantes"></div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="text-center mb-4">
+          <h1 class="h3">Acuerdo Legal - Distribución de Herencia por Rifa</h1>
+          <p class="lead">Bienvenido. Por favor, marque su decisión y firme para registrar su conformidad.</p>
+        </div>
+        <h5 class="card-title mb-0">Lista de Participantes</h5>
+      </div>
+      <div class="card-body">
+        <div class="list-group" id="lista-participantes"></div>
+      </div>
+    </div>
   </div>
 
   <div class="modal fade" id="signatureModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static"
@@ -123,9 +148,13 @@
     </div>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="../assets/libs/bootstrap/js/bootstrap.bundle.min.js"></script>
+  <script src="../assets/js/signature-pad.js"></script>
+
+  <script src="../assets/js/vendor.min.js"></script>
+  <script src="../assets/libs/sweetalert2/sweetalert2.min.js"></script>
+  <script src="../assets/js/app.min.js"></script>
+
   <script>
     const participantes = [
       "José Reyes Pérez Muñoz", "Patricia Pérez Muñoz", "Silvia Pérez Muñoz", "José Abel Pérez Muñoz",
@@ -260,6 +289,68 @@
             'success'
           );
         }
+      });
+    }
+
+    // Añade esta función a tu bloque <script> en formulario.html
+
+    function compartirFormulario() {
+      // --- IMPORTANTE: Cambia esta URL por la de tu sitio en producción ---
+      // La URL debe apuntar a la página de login, ya que cada usuario necesita su código.
+      const urlParaCompartir = 'http://tusitio.com/login';
+
+      const datosParaCompartir = {
+        title: 'Acuerdo Legal por Rifa',
+        text: 'Por favor, ingresa con tu clave para firmar el acuerdo de la rifa:',
+        url: urlParaCompartir,
+      };
+
+      // --- Método 1: Usar la API Web Share (la mejor opción en móviles) ---
+      if (navigator.share) {
+        navigator.share(datosParaCompartir)
+          .then(() => console.log('Contenido compartido exitosamente'))
+          .catch((error) => console.error('Error al compartir:', error));
+      } else {
+        // --- Método 2: Fallback con SweetAlert2 para navegadores no compatibles ---
+        const textoCodificado = encodeURIComponent(`${datosParaCompartir.text} ${datosParaCompartir.url}`);
+
+        Swal.fire({
+          title: 'Compartir Formulario',
+          html: `
+                <p>Usa una de las siguientes opciones para compartir el enlace de acceso:</p>
+                <div class="d-grid gap-2">
+                    <a href="httpsa://wa.me/?text=${textoCodificado}" target="_blank" class="btn btn-success">
+                        <i class="fab fa-whatsapp"></i> Compartir por WhatsApp
+                    </a>
+                    <a href="sms:?body=${textoCodificado}" class="btn btn-primary">
+                        <i class="fas fa-comment-sms"></i> Compartir por SMS
+                    </a>
+                    <button class="btn btn-secondary" onclick="copiarEnlaceAlPortapapeles('${datosParaCompartir.url}')">
+                        <i class="fas fa-copy"></i> Copiar Enlace
+                    </button>
+                </div>
+            `,
+          showConfirmButton: false,
+          showCloseButton: true
+        });
+      }
+    }
+
+    // Función auxiliar para el botón de copiar enlace
+    function copiarEnlaceAlPortapapeles(enlace) {
+      navigator.clipboard.writeText(enlace).then(() => {
+        Swal.fire({
+          icon: 'success',
+          title: '¡Enlace Copiado!',
+          toast: true,
+          position: 'top-end',
+          showConfirmButton: false,
+          backdrop: false,
+          timer: 2000
+        });
+      }).catch(err => {
+        console.error('Error al copiar el enlace: ', err);
+        Swal.fire('Error', 'No se pudo copiar el enlace.', 'error');
       });
     }
   </script>
