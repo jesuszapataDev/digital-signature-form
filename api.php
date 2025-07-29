@@ -61,7 +61,7 @@ if (isset($uri_parts[0]) && $uri_parts[0] == 'api') {
      ******************/
 
     // Determinar qué vista cargar. Si la ruta está vacía, carga 'index'.
-    $view_name = !empty($uri_parts[0]) ? $uri_parts[0] : 'index';
+    $view_name = !empty($uri_parts[0]) ? $uri_parts[1] : 'index';
     $view_file = __DIR__ . '/views/' . $view_name . '.php';
 
     if (file_exists($view_file)) {

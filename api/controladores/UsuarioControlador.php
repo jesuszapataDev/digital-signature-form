@@ -2,7 +2,7 @@
 // api/controllers/UsuarioController.php
 require_once __DIR__ . '/../modelos/UsuarioModelo.php';
 
-class UsuarioController
+class UsuarioControlador
 {
 
 
